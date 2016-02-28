@@ -9,10 +9,10 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
  */
 public class Percolation {
 
-    private int N;
+    private int N; // grid size
     private boolean[][] grid;
-    private WeightedQuickUnionUF uf;
-    private int vBottom, vTop, fullBottom;
+    private WeightedQuickUnionUF ufTopBottom, ufTop; // union-find helper structure
+    private int vBottom, vTop; // virtual top and virtual bottom respectively
 
     // create N-by-N grid, with all sites blocked
     public Percolation(int N) {
@@ -21,7 +21,8 @@ public class Percolation {
         }
         this.N = N;
         this.grid = new boolean[N + 1][N + 1];
-        this.uf = new WeightedQuickUnionUF(N * N + 2);
+        this.ufTopBottom = new WeightedQuickUnionUF(N * N + 2);
+        this.ufTop = new WeightedQuickUnionUF(N * N + 2);
         this.vBottom = 0;
         this.vTop = N * N + 1;
     }
@@ -36,13 +37,11 @@ public class Percolation {
         linkToNeighbor(site1D, i, j - 1);
         linkToNeighbor(site1D, i, j + 1);
         if (i == 1) {
-            uf.union(site1D, vTop);
+            ufTopBottom.union(site1D, vTop);
+            ufTop.union(site1D, vTop);
         }
         if (i == N) {
-            uf.union(site1D, vBottom);
-        }
-        if (uf.connected(vBottom, vTop)) {
-            fullBottom = site1D;
+            ufTopBottom.union(site1D, vBottom);
         }
     }
 
@@ -55,17 +54,18 @@ public class Percolation {
     // is site (row i, column j) full?
     public boolean isFull(int i, int j) {
         checkRanges(i, j);
-        return isOpen(i, j) && uf.connected(xyTo1D(i, j), vTop);
+        return isOpen(i, j) && ufTop.connected(xyTo1D(i, j), vTop);
     }
 
     // does the system percolate?
     public boolean percolates() {
-        return uf.connected(fullBottom, vTop);
+        return ufTopBottom.connected(vBottom, vTop);
     }
 
     private void linkToNeighbor(int site1D, int ni, int nj) {
         if (withinGrid(ni, nj) && isOpen(ni, nj)) {
-            uf.union(site1D, xyTo1D(ni, nj));
+            ufTopBottom.union(site1D, xyTo1D(ni, nj));
+            ufTop.union(site1D, xyTo1D(ni, nj));
         }
     }
 
