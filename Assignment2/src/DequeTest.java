@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import static junit.framework.TestCase.assertEquals;
 
-public class TestDeque {
+public class DequeTest {
 
     private static int N = 10;
     private Deque<Integer> deque;
@@ -29,8 +29,8 @@ public class TestDeque {
 
         assertEquals(N, deque.size());
         int j = N;
-        for (Integer integer : deque) {
-            assertEquals(--j, integer.intValue());
+        for (int integer : deque) {
+            assertEquals(--j, integer);
         }
 
         for (int i = 0; i < N; i++) {
@@ -48,8 +48,8 @@ public class TestDeque {
 
         assertEquals(N, deque.size());
         int j = 0;
-        for (Integer integer : deque) {
-            assertEquals(j++, integer.intValue());
+        for (int integer : deque) {
+            assertEquals(j++, integer);
         }
 
         for (int i = 0; i < N; i++) {

@@ -9,6 +9,10 @@
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/*
+* A double-ended queue or deque is a generalization of a stack and a queue that supports
+* adding and removing items from either the front or the back of the data structure
+* */
 public class Deque<Item> implements Iterable<Item> {
 
     private Node first, last;
@@ -16,7 +20,6 @@ public class Deque<Item> implements Iterable<Item> {
 
     // construct an empty deque
     public Deque() {
-        first = last;
     }
 
     // is the deque empty?
@@ -64,8 +67,7 @@ public class Deque<Item> implements Iterable<Item> {
         first = oldFirst.next;
         if (first != null) {
             first.prev = null;
-        }
-        else {
+        } else {
             last = null;
         }
         size--;
@@ -78,9 +80,8 @@ public class Deque<Item> implements Iterable<Item> {
         Node oldLast = last;
         last = oldLast.prev;
         if (last != null) {
-           last.next = null;
-        }
-        else {
+            last.next = null;
+        } else {
             first = null;
         }
 
@@ -126,11 +127,11 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     private class Node {
-        Item item;
-        Node prev;
-        Node next;
+        private Item item;
+        private Node prev;
+        private Node next;
 
-        public Node(Item item, Node prev, Node next) {
+        Node(Item item, Node prev, Node next) {
             this.item = item;
             this.prev = prev;
             this.next = next;
