@@ -5,7 +5,7 @@ import edu.princeton.cs.algs4.StdOut;
 /**
  * Created by alex on 08.03.16.
  */
-public class SampleClient {
+public class BruteClient {
     public static void main(String[] args) {
 
         // read the N points from a file
