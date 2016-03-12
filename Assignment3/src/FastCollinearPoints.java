@@ -1,3 +1,5 @@
+import edu.princeton.cs.algs4.StdOut;
+
 import java.util.*;
 
 /**
@@ -22,27 +24,36 @@ public class FastCollinearPoints {
             Point p = points[i];
             for (int j = 0; j < points.length; j++) {
                 if (i == j) continue;
-                slopes.add(p.slopeTo(points[j]));
+                double slopeTo = p.slopeTo(points[j]);
+                slopes.add(slopeTo);
+                StdOut.printf("%s -> %s : %f", p, points[j], slopeTo);
             }
+            StdOut.println();
             Point[] sortedPoints = Arrays.copyOf(points, points.length);
             Arrays.sort(sortedPoints, points[i].slopeOrder());
+            StdOut.println(Arrays.toString(sortedPoints));
             slopes.sort(null);
+            StdOut.println(slopes);
             int sameSlopes = 1;
             double firstSlope = slopes.get(0);
+            int maxSlopes = 1;
+            Point segmentEnd = null;
             for (int j = 1; j < slopes.size(); j++) {
                 if (firstSlope == slopes.get(j)) {
                     sameSlopes++;
                 }
                 else {
-                    if (sameSlopes >= 3) {
-                        lineSegments.add(new LineSegment(p, sortedPoints[j-1]));
+                    if (sameSlopes >= 3 && sameSlopes > maxSlopes) {
+                        maxSlopes = sameSlopes;
+                        segmentEnd = sortedPoints[j-1];
+//                        lineSegments.add(new LineSegment(p, sortedPoints[j-1]));
                     }
                     sameSlopes = 1;
                     firstSlope = slopes.get(j);
                 }
             }
-            if (sameSlopes >= 3) {
-                lineSegments.add(new LineSegment(p, sortedPoints[slopes.size()]));
+            if (segmentEnd != null) {
+                lineSegments.add(new LineSegment(p, segmentEnd));
             }
         }
     }
