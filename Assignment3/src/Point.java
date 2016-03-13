@@ -72,7 +72,7 @@ public class Point implements Comparable<Point> {
         } else if (deltaY == 0) {
             return 0;
         } else {
-            return (double)deltaY / deltaX;
+            return (double) deltaY / deltaX;
         }
     }
 

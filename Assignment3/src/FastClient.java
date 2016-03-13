@@ -4,6 +4,8 @@ import edu.princeton.cs.algs4.StdOut;
 
 /**
  * Created by Aleksei Grishkov on 09.03.2016.
+ *
+ * A client for {@link FastCollinearPoints}
  */
 public class FastClient {
     public static void main(String[] args) {
@@ -19,7 +21,6 @@ public class FastClient {
         }
 
         // draw the points
-//        StdDraw.setPenRadius(0.01);
         StdDraw.show(0);
         StdDraw.setXscale(0, 32768);
         StdDraw.setYscale(0, 32768);
