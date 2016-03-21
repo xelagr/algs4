@@ -4,6 +4,12 @@
     <groupId>io.grishkov.algs4</groupId>
     <artifactId>assignments-parent</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>Assignment1</module>
+        <module>Assignment2</module>
+        <module>Assignment3</module>
+        <module>Assignment4</module>
+    </modules>
     <packaging>pom</packaging>
 
     <build>
