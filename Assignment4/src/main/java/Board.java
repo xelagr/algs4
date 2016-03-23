@@ -1,7 +1,6 @@
 import edu.princeton.cs.algs4.In;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -93,13 +92,6 @@ public class Board {
             }
         }
         return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = Arrays.deepHashCode(blocks);
-        result = 31 * result + N;
-        return result;
     }
 
     // all neighboring boards

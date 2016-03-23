@@ -11,8 +11,7 @@ import edu.princeton.cs.algs4.StdOut;
 public class Solver {
 
     private int moves = -1;
-    private SearchNode goal;
-    private boolean isSolvable;
+    private Stack<Board> solution;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
@@ -24,91 +23,47 @@ public class Solver {
         searchNodes.insert(new SearchNode(initial, 0, null));
         twinSearchNodes.insert(new SearchNode(initial.twin(), 0, null));
         SearchNode min, minTwin;
+
         do {
             moves++;
             min = addNeigborsAndGetMin(searchNodes);
+//            printMinAndQueue(min, searchNodes);
             minTwin = addNeigborsAndGetMin(twinSearchNodes);
         } while (!min.getBoard().isGoal() && !minTwin.getBoard().isGoal());
+
         if (min.getBoard().isGoal()) {
-            isSolvable = true;
-            goal = min;
+            initSolution(min);
         }
     }
 
-    private SearchNode addNeigborsAndGetMin(MinPQ<SearchNode> searchNodes) {
-        SearchNode min = searchNodes.delMin();
-        for (Board board : min.getBoard().neighbors()) {
-            if (min.getPrevious() == null || !board.equals(min.getPrevious().getBoard())) {
-                searchNodes.insert(new SearchNode(board, moves+1, min));
-            }
+    private void printMinAndQueue(SearchNode min, MinPQ<SearchNode> searchNodes) {
+        System.out.println("Moves: " + moves);
+        printNode(min);
+        for (SearchNode searchNode : searchNodes) {
+            printNode(searchNode);
         }
-        return min;
+        System.out.println();
     }
 
-    private static class SearchNode implements Comparable<SearchNode> {
-        private final Board board;
-        private final int moves;
-        private final SearchNode previous;
-
-        SearchNode(Board board, int moves, SearchNode previous) {
-            this.board = board;
-            this.moves = moves;
-            this.previous = previous;
-        }
-
-        @Override
-        public int compareTo(SearchNode node) {
-            return priority() - node.priority();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            SearchNode that = (SearchNode) o;
-            return priority() == that.priority();
-        }
-
-        @Override
-        public int hashCode() {
-            return moves;
-        }
-
-        private int priority() {
-            return board.manhattan() + moves;
-        }
-
-        public Board getBoard() {
-            return board;
-        }
-
-        public SearchNode getPrevious() {
-            return previous;
-        }
+    private void printNode(SearchNode node) {
+        StdOut.print(node.getBoard());
+        StdOut.printf("manhattan: %d, moves: %d\r\n\r\n", node.getBoard().manhattan(), node.getMoves());
     }
 
     // is the initial board solvable?
     public boolean isSolvable() {
-        return isSolvable;
+        return solution != null;
     }
 
     // min number of moves to solve initial board; -1 if unsolvable
     public int moves() {
-        return moves;
+        return solution.size() - 1;
+//        return moves;
     }
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
-        if (isSolvable()) {
-            Stack<Board> solution = new Stack<>();
-            SearchNode current = goal;
-            do {
-                solution.push(current.getBoard());
-                current = current.getPrevious();
-            } while (current != null);
-            return solution;
-        }
-        return null;
+        return solution;
     }
 
     // solve a slider puzzle (given below)
@@ -136,6 +91,78 @@ public class Solver {
                 StdOut.print(board);
                 StdOut.printf("manhattan: %d, moves: %d\r\n\r\n", board.manhattan(), i++);
             }
+        }
+    }
+
+    private void initSolution(SearchNode goal) {
+        solution = new Stack<>();
+        SearchNode current = goal;
+        do {
+            solution.push(current.getBoard());
+            current = current.getPrevious();
+        } while (current != null);
+    }
+
+    private SearchNode addNeigborsAndGetMin(MinPQ<SearchNode> searchNodes) {
+        SearchNode min = searchNodes.delMin();
+        for (Board board : min.getBoard().neighbors()) {
+            if (min.getPrevious() == null || !board.equals(min.getPrevious().getBoard())) {
+                searchNodes.insert(new SearchNode(board, moves+1, min));
+            }
+        }
+        return min;
+    }
+
+    private static class SearchNode implements Comparable<SearchNode> {
+        private final Board board;
+        private final int moves;
+        private final SearchNode previous;
+
+        SearchNode(Board board, int moves, SearchNode previous) {
+            this.board = board;
+            this.moves = moves;
+            this.previous = previous;
+        }
+
+        @Override
+        public int compareTo(SearchNode node) {
+            int diff = priority() - node.priority();
+            if (diff == 0) {
+                diff = board.manhattan() - node.getBoard().manhattan();
+                /*if (diff == 0) {
+                    diff = node.getBoard().hamming() - board.hamming();
+                }*/
+            }
+            return diff;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SearchNode that = (SearchNode) o;
+            return priority() == that.priority();
+        }
+
+        @Override
+        public int hashCode() {
+            return moves;
+        }
+
+        private int priority() {
+            return board.manhattan() + moves;
+        }
+
+        public Board getBoard() {
+            return board;
+        }
+
+        public SearchNode getPrevious() {
+            return previous;
+        }
+
+        public int getMoves() {
+            return moves;
         }
     }
 
