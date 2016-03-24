@@ -28,26 +28,21 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class PuzzleChecker {
 
     public static void main(String[] args) throws IOException {
 
-        String dir = "/home/alex/IdeaProjects/algs4/Assignment4/8puzzle/";
-        String[] files = getFiles(dir, "puzzle.*\\.txt");
         // for each command-line argument
-        for (String filename : files) {
-
+        for (String filename : args) {
             // read in the board specified in the filename
-            In in = new In(dir + filename);
+            In in = new In(filename);
             int N = in.readInt();
             int[][] tiles = new int[N][N];
             for (int i = 0; i < N; i++) {
                 for (int j = 0; j < N; j++) {
-                    tiles[i][j] = in.readInt();
+                    tiles[i][j] = in.readShort();
                 }
             }
 
@@ -58,9 +53,4 @@ public class PuzzleChecker {
         }
     }
 
-    private static String[] getFiles(String dir, String pattern) throws IOException {
-        String[] files = new File(dir).list((dir1, name) -> name.matches(pattern));
-        Arrays.sort(files);
-        return files;
-    }
 }

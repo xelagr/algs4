@@ -1,5 +1,4 @@
 import edu.princeton.cs.algs4.In;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,16 +10,45 @@ import java.util.List;
  */
 public class Board {
 
-    private final int[][] blocks;
+    private static final int MIN_N = 2;
+    private static final int MAX_N = 128;
+
+    private final short[][] blocks;
     private final int N;
     private int blankRow;
     private int blankCol;
+    private int manhattan;
+    private int hamming;
 
     // construct a board from an N-by-N array of blocks
     // (where blocks[i][j] = block in row i, column j)
     public Board(int[][] blocks) {
-        this.blocks = blocksClone(blocks);
+        this(optimizeBlockSize(blocks));
+    }
+
+    private Board(short[][] blocks) {
         this.N = blocks.length;
+        if (N < MIN_N || N >= MAX_N) {
+            throw new IllegalArgumentException("2 ≤ N < 128 is required");
+        }
+        this.blocks = blocks;
+        initBlankBlockIndices();
+        manhattan = -1;
+        hamming = -1;
+    }
+
+    private static short[][] optimizeBlockSize(int[][] blocks) {
+        int N = blocks.length;
+        short[][] optimizedBlocks = new short[N][N];
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                optimizedBlocks[i][j] = (short) blocks[i][j];
+            }
+        }
+        return optimizedBlocks;
+    }
+
+    private void initBlankBlockIndices() {
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
                 if (updateBlankBlockIndices(i, j)) return;
@@ -35,28 +63,32 @@ public class Board {
 
     // number of blocks out of place
     public int hamming() {
-        int sum = 0;
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                if (i != blankRow || j != blankCol) {
-                    sum += rowColTo1D(i, j) == blocks[i][j] ? 0 : 1;
+        if (hamming == -1) {
+            hamming = 0;
+            for (int i = 0; i < N; i++) {
+                for (int j = 0; j < N; j++) {
+                    if (i != blankRow || j != blankCol) {
+                        hamming += rowColTo1D(i, j) == blocks[i][j] ? 0 : 1;
+                    }
                 }
             }
         }
-        return sum;
+        return hamming;
     }
 
     // sum of Manhattan distances between blocks and goal
     public int manhattan() {
-        int sum = 0;
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                if (i != blankRow || j != blankCol) {
-                    sum += manhattanDistance(i, j);
+        if (manhattan == -1) {
+            manhattan = 0;
+            for (int i = 0; i < N; i++) {
+                for (int j = 0; j < N; j++) {
+                    if (i != blankRow || j != blankCol) {
+                        manhattan += blockManhattanDistance(i, j);
+                    }
                 }
             }
         }
-        return sum;
+        return manhattan;
     }
 
     // is this board the goal board?
@@ -153,7 +185,7 @@ public class Board {
         return r*N + c + 1;
     }
 
-    private int manhattanDistance(int curRow, int curCol) {
+    private int blockManhattanDistance(int curRow, int curCol) {
         int targetCol = (blocks[curRow][curCol] - 1) % N;
         int targetRow = (blocks[curRow][curCol] - targetCol - 1) / N;
         return Math.abs(curCol - targetCol) + Math.abs(curRow - targetRow);
@@ -169,8 +201,8 @@ public class Board {
         return new Board(blocksClone(blocks));
     }
 
-    private int[][] blocksClone(int[][] oldBlocks) {
-        int[][] newBlocks = oldBlocks.clone();
+    private short[][] blocksClone(short[][] oldBlocks) {
+        short[][] newBlocks = oldBlocks.clone();
         for (int i = 0; i < N; i++) {
             newBlocks[i] = oldBlocks[i].clone();
         }
@@ -178,7 +210,7 @@ public class Board {
     }
 
     private void swap(int i1, int j1, int i2, int j2) {
-        int tmp = blocks[i1][j1];
+        short tmp = blocks[i1][j1];
         blocks[i1][j1] = blocks[i2][j2];
         blocks[i2][j2] = tmp;
         updateBlankBlockIndices(i1, j1);
