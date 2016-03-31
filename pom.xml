@@ -9,6 +9,7 @@
         <module>Assignment2</module>
         <module>Assignment3</module>
         <module>Assignment4</module>
+        <module>Assignment5</module>
     </modules>
     <packaging>pom</packaging>
 
