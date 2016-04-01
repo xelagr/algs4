@@ -146,7 +146,7 @@ public class KdTree {
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
         checkForNull(p, "A point cannot be null");
-        return nearest(p, root, true, 1.0, root.point);
+        return nearest(p, root, true, 1.0, null);
     }
 
     private Point2D nearest(Point2D p, Node node, boolean divideByX, double minDist, Point2D champion) {
@@ -158,15 +158,15 @@ public class KdTree {
             }
             int cmp = divideByX ? Double.compare(p.x(), node.point.x()) : Double.compare(p.y(), node.point.y());
             if (cmp < 0) {
-                nearest(p, node.lb, !divideByX, minDist, champion);
-                if (node.rt.rect.distanceTo(p) < minDist) {
-                    nearest(p, node.rt, !divideByX, minDist, champion);
+                champion = nearest(p, node.lb, !divideByX, minDist, champion);
+                if (node.rt != null && node.rt.rect.distanceTo(p) < minDist) {
+                    champion = nearest(p, node.rt, !divideByX, minDist, champion);
                 }
             }
             else {
-                nearest(p, node.rt, !divideByX, minDist, champion);
-                if (node.lb.rect.distanceTo(p) < minDist) {
-                    nearest(p, node.lb, !divideByX, minDist, champion);
+                champion = nearest(p, node.rt, !divideByX, minDist, champion);
+                if (node.lb != null && node.lb.rect.distanceTo(p) < minDist) {
+                    champion = nearest(p, node.lb, !divideByX, minDist, champion);
                 }
             }
         }
