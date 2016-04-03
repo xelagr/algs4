@@ -1,7 +1,4 @@
-import edu.princeton.cs.algs4.Point2D;
-import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.StdDraw;
-import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -40,6 +37,37 @@ public class KdTree {
         root = insert(root,  p, rootRect, true);
     }
 
+    // does the set contain point p?
+    public boolean contains(Point2D p) {
+        checkForNull(p, "A point cannot be null");
+        return contains(root, p, true);
+    }
+
+    // draw all points to standard draw
+    public void draw() {
+        draw(root, true);
+    }
+
+    // all points that are inside the rectangle
+    public Iterable<Point2D> range(RectHV rect) {
+        checkForNull(rect, "A rectangle cannot be null");
+        return root != null ? range(root, rect, new ArrayList<>()) : new ArrayList<>();
+    }
+
+    // a nearest neighbor in the set to point p; null if the set is empty
+    public Point2D nearest(Point2D p) {
+        checkForNull(p, "A point cannot be null");
+        Champion champion = new Champion();
+        champion.update(null, 1.0);
+        nearest(p, root, true, champion);
+        return champion.p;
+    }
+
+    // unit testing of the methods (optional)
+    public static void main(String[] args) {
+        testDraw(args[0]);
+    }
+
     private Node insert(Node curNode, Point2D p, RectHV rect, boolean orientationByX) {
         if (curNode == null) {
             size++;
@@ -53,20 +81,6 @@ public class KdTree {
         return curNode;
     }
 
-    private RectHV lbRect(boolean orientationByX, Point2D p, RectHV rect) {
-        return orientationByX ? getLeftRect(p, rect) : getBottomRect(p, rect);
-    }
-
-    private RectHV rtRect(boolean orientationByX, Point2D p, RectHV rect) {
-        return orientationByX ? getRightRect(p, rect) : getTopRect(p, rect);
-    }
-
-    // does the set contain point p?
-    public boolean contains(Point2D p) {
-        checkForNull(p, "A point cannot be null");
-        return contains(root, p, true);
-    }
-
     private boolean contains(Node current, Point2D p, boolean divideByX) {
         if (current == null) return false;
         int cmp = divideByX ? Double.compare(p.x(), current.point.x()) : Double.compare(p.y(), current.point.y());
@@ -75,9 +89,30 @@ public class KdTree {
         else return current.point.equals(p) || contains(current.rt, p, !divideByX);
     }
 
-    // draw all points to standard draw
-    public void draw() {
-        draw(root, true);
+    private List<Point2D> range(Node node, RectHV rect, List<Point2D> points) {
+        if (rect.contains(node.point)) points.add(node.point);
+        if (node.lb != null && rect.intersects(node.lb.rect)) range(node.lb, rect, points);
+        if (node.rt != null && rect.intersects(node.rt.rect)) range(node.rt, rect, points);
+        return points;
+    }
+
+    private void nearest(Point2D p, Node node, boolean divideByX, Champion champion) {
+        if (node != null) {
+            double dist = node.point.distanceSquaredTo(p);
+            if (dist < champion.dist) {
+                champion.update(node.point, dist);
+            }
+            int cmp = divideByX ? Double.compare(p.x(), node.point.x()) : Double.compare(p.y(), node.point.y());
+            if (cmp < 0) nearestChildren(p, node.lb, node.rt, !divideByX, champion);
+            else nearestChildren(p, node.rt, node.lb, !divideByX, champion);
+        }
+    }
+
+    private void nearestChildren(Point2D p, Node firstNode, Node secondNode, boolean divideByX, Champion champion) {
+        nearest(p, firstNode, !divideByX, champion);
+        if (secondNode != null && secondNode.rect.distanceSquaredTo(p) < champion.dist) {
+            nearest(p, secondNode, !divideByX, champion);
+        }
     }
 
     private void draw(Node curNode, boolean divideByX) {
@@ -101,6 +136,32 @@ public class KdTree {
         draw(curNode.rt, !divideByX);
     }
 
+    private class Node {
+        private Point2D point;  // the point
+        private Node lb;        // the left/bottom subtree
+        private Node rt;        // the right/top subtree
+        private RectHV rect;    // the axis-aligned rectangle corresponding to this node
+
+        Node(Point2D point, RectHV rect) {
+            this.point = point;
+            this.rect = rect;
+        }
+    }
+
+    private void checkForNull(Object o, String message) {
+        if (o == null) {
+            throw new NullPointerException(message);
+        }
+    }
+
+    private RectHV lbRect(boolean orientationByX, Point2D p, RectHV rect) {
+        return orientationByX ? getLeftRect(p, rect) : getBottomRect(p, rect);
+    }
+
+    private RectHV rtRect(boolean orientationByX, Point2D p, RectHV rect) {
+        return orientationByX ? getRightRect(p, rect) : getTopRect(p, rect);
+    }
+
     private RectHV getLeftRect(Point2D p, RectHV rect) {
         return new RectHV(rect.xmin(), rect.ymin(), p.x(), rect.ymax());
     }
@@ -117,64 +178,17 @@ public class KdTree {
         return new RectHV(rect.xmin(), p.y(), rect.xmax(), rect.ymax());
     }
 
-    private List<Point2D> getPoints() {
-        List<Point2D> points = new ArrayList<>();
-        fillPoints(root, points);
-        return points;
-    }
+    private class Champion {
+        private Point2D p;
+        private double dist;
 
-    private void fillPoints(Node curNode, List<Point2D> points) {
-        if (curNode == null) return;
-        points.add(curNode.point);
-        fillPoints(curNode.lb, points);
-        fillPoints(curNode.rt, points);
-    }
-
-    // all points that are inside the rectangle
-    public Iterable<Point2D> range(RectHV rect) {
-        checkForNull(rect, "A rectangle cannot be null");
-        return root != null ? range(root, rect, new ArrayList<>()) : new ArrayList<>();
-    }
-
-    private List<Point2D> range(Node node, RectHV rect, List<Point2D> points) {
-        if (rect.contains(node.point)) points.add(node.point);
-        if (node.lb != null && rect.intersects(node.lb.rect)) range(node.lb, rect, points);
-        if (node.rt != null && rect.intersects(node.rt.rect)) range(node.rt, rect, points);
-        return points;
-    }
-
-    // a nearest neighbor in the set to point p; null if the set is empty
-    public Point2D nearest(Point2D p) {
-        checkForNull(p, "A point cannot be null");
-        return nearest(p, root, true, 1.0, null);
-    }
-
-    private Point2D nearest(Point2D p, Node node, boolean divideByX, double minDist, Point2D champion) {
-        if (node != null) {
-            double dist = node.point.distanceTo(p);
-            if (dist < minDist) {
-                minDist = dist;
-                champion = node.point;
-            }
-            int cmp = divideByX ? Double.compare(p.x(), node.point.x()) : Double.compare(p.y(), node.point.y());
-            if (cmp < 0) {
-                champion = nearest(p, node.lb, !divideByX, minDist, champion);
-                if (node.rt != null && node.rt.rect.distanceTo(p) < minDist) {
-                    champion = nearest(p, node.rt, !divideByX, minDist, champion);
-                }
-            }
-            else {
-                champion = nearest(p, node.rt, !divideByX, minDist, champion);
-                if (node.lb != null && node.lb.rect.distanceTo(p) < minDist) {
-                    champion = nearest(p, node.lb, !divideByX, minDist, champion);
-                }
-            }
+        private void update(Point2D p, double dist) {
+            this.p = p;
+            this.dist = dist;
         }
-        return champion;
     }
 
-    // unit testing of the methods (optional)
-    public static void main(String[] args) {
+    private static void testBasic() {
         KdTree kdTree = new KdTree();
         List<Point2D> pointList = new ArrayList<>();
         pointList.add(new Point2D(0.5, 0.2));
@@ -210,21 +224,32 @@ public class KdTree {
         assert !kdTree.contains(point) : String.format("kdTree contains point %s that was not added to the tree", point);
     }
 
-    private class Node {
-        private Point2D point;  // the point
-        private Node lb;        // the left/bottom subtree
-        private Node rt;        // the right/top subtree
-        private RectHV rect;    // the axis-aligned rectangle corresponding to this node
-
-        Node(Point2D point, RectHV rect) {
-            this.point = point;
-            this.rect = rect;
-        }
+    private List<Point2D> getPoints() {
+        List<Point2D> points = new ArrayList<>();
+        fillPoints(root, points);
+        return points;
     }
 
-    private void checkForNull(Object o, String message) {
-        if (o == null) {
-            throw new NullPointerException(message);
-        }
+    private void fillPoints(Node curNode, List<Point2D> points) {
+        if (curNode == null) return;
+        points.add(curNode.point);
+        fillPoints(curNode.lb, points);
+        fillPoints(curNode.rt, points);
     }
+
+    private static void testDraw(String filename) {
+        In in = new In(filename);
+
+        // initialize the two data structures with point from standard input
+        KdTree kdtree = new KdTree();
+        while (!in.isEmpty()) {
+            double x = in.readDouble();
+            double y = in.readDouble();
+            Point2D p = new Point2D(x, y);
+            kdtree.insert(p);
+        }
+
+        kdtree.draw();
+    }
+
 }
