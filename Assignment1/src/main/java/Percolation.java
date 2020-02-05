@@ -9,52 +9,60 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
  */
 public class Percolation {
 
-    private int N; // grid size
+    private int n; // grid size
+    private int openSites;
     private boolean[][] grid;
     private WeightedQuickUnionUF ufTopBottom, ufTop; // union-find helper structure
     private int vBottom, vTop; // virtual top and virtual bottom respectively
 
-    // create N-by-N grid, with all sites blocked
-    public Percolation(int N) {
-        if (N <= 0) {
-            throw new IllegalArgumentException("N should be above 0");
+    // create n-by-n grid, with all sites blocked
+    public Percolation(int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException("n should be above 0");
         }
-        this.N = N;
-        this.grid = new boolean[N + 1][N + 1];
-        this.ufTopBottom = new WeightedQuickUnionUF(N * N + 2);
-        this.ufTop = new WeightedQuickUnionUF(N * N + 2);
+        this.n = n;
+        this.grid = new boolean[n + 1][n + 1];
+        this.ufTopBottom = new WeightedQuickUnionUF(n * n + 2);
+        this.ufTop = new WeightedQuickUnionUF(n * n + 2);
         this.vBottom = 0;
-        this.vTop = N * N + 1;
+        this.vTop = n * n + 1;
     }
 
-    // open site (row i, column j) if it is not open already
-    public void open(int i, int j) {
-        checkRanges(i, j);
-        grid[i][j] = true;
-        int site1D = xyTo1D(i, j);
-        linkToNeighbor(site1D, i - 1, j);
-        linkToNeighbor(site1D, i + 1, j);
-        linkToNeighbor(site1D, i, j - 1);
-        linkToNeighbor(site1D, i, j + 1);
-        if (i == 1) {
+    // open site (row, col) if it is not open already
+    public void open(int row, int col) {
+        checkRanges(row, col);
+        if (grid[row][col]) return;
+
+        grid[row][col] = true;
+        int site1D = xyTo1D(row, col);
+        linkToNeighbor(site1D, row - 1, col);
+        linkToNeighbor(site1D, row + 1, col);
+        linkToNeighbor(site1D, row, col - 1);
+        linkToNeighbor(site1D, row, col + 1);
+        if (row == 1) {
             ufTopBottom.union(site1D, vTop);
             ufTop.union(site1D, vTop);
         }
-        if (i == N) {
+        if (row == n) {
             ufTopBottom.union(site1D, vBottom);
         }
+        openSites++;
     }
 
-    // is site (row i, column j) open?
-    public boolean isOpen(int i, int j) {
-        checkRanges(i, j);
-        return grid[i][j];
+    // is site (row, col) open?
+    public boolean isOpen(int row, int col) {
+        checkRanges(row, col);
+        return grid[row][col];
     }
 
-    // is site (row i, column j) full?
-    public boolean isFull(int i, int j) {
-        checkRanges(i, j);
-        return isOpen(i, j) && ufTop.connected(xyTo1D(i, j), vTop);
+    // is site (row, col) full?
+    public boolean isFull(int row, int col) {
+        checkRanges(row, col);
+        return isOpen(row, col) && ufTop.connected(xyTo1D(row, col), vTop);
+    }
+
+    public int numberOfOpenSites() {
+        return openSites;
     }
 
     // does the system percolate?
@@ -70,16 +78,16 @@ public class Percolation {
     }
 
     private int xyTo1D(int x, int y) {
-        return (x - 1) * N + y;
+        return (x - 1) * n + y;
     }
 
     private boolean withinGrid(int i, int j) {
-        return (i >= 1 && i <= N) && (j >= 1 && j <= N);
+        return (i >= 1 && i <= n) && (j >= 1 && j <= n);
     }
 
     private void checkRanges(int i, int j) {
-        checkRange(i, 1, N);
-        checkRange(j, 1, N);
+        checkRange(i, 1, n);
+        checkRange(j, 1, n);
     }
 
     private void checkRange(int index, int min, int max) {
