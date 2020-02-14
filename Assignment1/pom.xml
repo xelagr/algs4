@@ -18,5 +18,11 @@
             <scope>system</scope>
             <systemPath>${basedir}/../libs/algs4.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
