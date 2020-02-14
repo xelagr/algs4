@@ -1,6 +1,7 @@
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdStats;
+import edu.princeton.cs.algs4.Stopwatch;
 
 /**
  * Created by Aleksei Grishkov on 13.02.16.
@@ -11,33 +12,33 @@ import edu.princeton.cs.algs4.StdStats;
 public class PercolationStats {
 
     private double[] percolationThresholds;
-    private int N, T;
+    private int n, t;
 
     // perform T independent experiments on an N-by-N grid
-    public PercolationStats(int N, int T) {
-        if (N <= 0 || T <= 0) {
+    public PercolationStats(int n, int t) {
+        if (n <= 0 || t <= 0) {
             throw new IllegalArgumentException("Both N and T should be above 0");
         }
-        this.N = N;
-        this.T = T;
-        percolationThresholds = new double[T];
-        for (int i = 0; i < T; i++) {
-            percolationThresholds[i] = runExperiment(new Percolation(N));
+        this.n = n;
+        this.t = t;
+        percolationThresholds = new double[t];
+        for (int i = 0; i < t; i++) {
+            percolationThresholds[i] = runExperiment(new Percolation(n));
         }
     }
 
     private double runExperiment(Percolation p) {
         int opened = 0;
         do {
-            int i = StdRandom.uniform(1, N + 1);
-            int j = StdRandom.uniform(1, N + 1);
+            int i = StdRandom.uniform(1, n + 1);
+            int j = StdRandom.uniform(1, n + 1);
             if (!p.isOpen(i, j)) {
                 p.open(i, j);
                 opened++;
             }
         }
         while (!p.percolates());
-        return (double) opened / (N*N);
+        return (double) opened / (n * n);
     }
 
     // sample mean of percolation threshold
@@ -52,15 +53,16 @@ public class PercolationStats {
 
     // low  endpoint of 95% confidence interval
     public double confidenceLo() {
-        return mean() - (1.96 * stddev() / Math.sqrt(T));
+        return mean() - (1.96 * stddev() / Math.sqrt(t));
     }
 
     // high endpoint of 95% confidence interval
     public double confidenceHi() {
-        return mean() + (1.96 * stddev() / Math.sqrt(T));
+        return mean() + (1.96 * stddev() / Math.sqrt(t));
     }
 
     public static void main(String[] args) {
+        Stopwatch sw = new Stopwatch();
         if (args.length != 2) {
             StdOut.println("Usage: PercolationStats N T");
             StdOut.println("\twhere N - grid size");
@@ -79,6 +81,7 @@ public class PercolationStats {
         else {
             StdOut.printf("95%% confidence interval = %f, %f\n", stats.confidenceLo(), stats.confidenceHi());
         }
+        System.out.println("Total time: " + sw.elapsedTime());
     }
 
 }
