@@ -10,7 +10,7 @@ import edu.princeton.cs.algs4.StdOut;
  */
 public class Solver {
 
-    private int steps = 0;
+    private int steps;
     private Stack<Board> solution;
 
     // find a solution to the initial board (using the A* algorithm)
@@ -33,7 +33,7 @@ public class Solver {
         if (min.getBoard().isGoal()) {
             initSolution(min);
         }
-        System.out.println("Steps: " + steps);
+//        System.out.println("Steps: " + steps);
     }
 
     // is the initial board solvable?
@@ -77,8 +77,8 @@ public class Solver {
                 StdOut.printf("manhattan: %d, moves: %d\r\n\r\n", board.manhattan(), i++);
             }
         }
-        System.out.println("steps: " + solver.steps);
-        System.out.println("moves: " + solver.moves());
+//        System.out.println("steps: " + solver.steps);
+//        System.out.println("moves: " + solver.moves());
     }
 
     private static class SearchNode implements Comparable<SearchNode> {
@@ -102,10 +102,10 @@ public class Solver {
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            SearchNode that = (SearchNode) o;
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null || getClass() != obj.getClass()) return false;
+            SearchNode that = (SearchNode) obj;
             return priority() == that.priority();
         }
 

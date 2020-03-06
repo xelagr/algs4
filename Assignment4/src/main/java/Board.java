@@ -1,5 +1,6 @@
 import edu.princeton.cs.algs4.In;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ public class Board {
     private static final int MAX_N = 128;
 
     private final short[][] blocks;
-    private final int N;
+    private final int n;
     private int blankRow;
     private int blankCol;
     private int manhattan;
@@ -27,11 +28,14 @@ public class Board {
     }
 
     private Board(short[][] blocks) {
-        this.N = blocks.length;
-        if (N < MIN_N || N >= MAX_N) {
+        this.n = blocks.length;
+        if (n < MIN_N || n >= MAX_N) {
             throw new IllegalArgumentException("2 ≤ N < 128 is required");
         }
-        this.blocks = blocks;
+        this.blocks = new short[blocks.length][];
+        for (int i = 0; i < blocks.length; i++) {
+            this.blocks[i] = Arrays.copyOf(blocks[i], blocks[i].length);
+        }
         initBlankBlockIndices();
         manhattan = -1;
         hamming = -1;
@@ -49,8 +53,8 @@ public class Board {
     }
 
     private void initBlankBlockIndices() {
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
                 if (updateBlankBlockIndices(i, j)) return;
             }
         }
@@ -58,15 +62,15 @@ public class Board {
 
     // board dimension N
     public int dimension() {
-        return N;
+        return n;
     }
 
     // number of blocks out of place
     public int hamming() {
         if (hamming == -1) {
             hamming = 0;
-            for (int i = 0; i < N; i++) {
-                for (int j = 0; j < N; j++) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
                     if (i != blankRow || j != blankCol) {
                         hamming += rowColTo1D(i, j) == blocks[i][j] ? 0 : 1;
                     }
@@ -80,8 +84,8 @@ public class Board {
     public int manhattan() {
         if (manhattan == -1) {
             manhattan = 0;
-            for (int i = 0; i < N; i++) {
-                for (int j = 0; j < N; j++) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
                     if (i != blankRow || j != blankCol) {
                         manhattan += blockManhattanDistance(i, j);
                     }
@@ -99,10 +103,10 @@ public class Board {
     // a board that is obtained by exchanging any pair of blocks
     public Board twin() {
         Board twin = boardClone();
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                int nextJ = (j + 1) % N;
-                int nextI = nextJ > j ? i : (i + 1) % N;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                int nextJ = (j + 1) % n;
+                int nextI = nextJ > j ? i : (i + 1) % n;
                 if (blocks[i][j] != 0 && blocks[nextI][nextJ] != 0) {
                     twin.swap(i, j, nextI, nextJ);
                     return twin;
@@ -118,8 +122,8 @@ public class Board {
         if (y == null || getClass() != y.getClass()) return false;
         Board b = (Board) y;
         if (dimension() != b.dimension()) return false;
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
                 if (blocks[i][j] != b.blocks[i][j]) return false;
             }
         }
@@ -132,13 +136,13 @@ public class Board {
         if (blankRow - 1 >= 0) {
             neighbors.add(makeNeighbor(blankRow - 1, blankCol, blankRow, blankCol));
         }
-        if (blankRow + 1 < N) {
+        if (blankRow + 1 < n) {
             neighbors.add(makeNeighbor(blankRow + 1, blankCol, blankRow, blankCol));
         }
         if (blankCol - 1 >= 0) {
             neighbors.add(makeNeighbor(blankRow, blankCol - 1, blankRow, blankCol));
         }
-        if (blankCol + 1 < N) {
+        if (blankCol + 1 < n) {
             neighbors.add(makeNeighbor(blankRow, blankCol + 1, blankRow, blankCol));
         }
         return neighbors;
@@ -146,9 +150,9 @@ public class Board {
 
     // string representation of this board
     public String toString() {
-        StringBuilder sb = new StringBuilder().append(N).append("\r\n");
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
+        StringBuilder sb = new StringBuilder().append(n).append("\r\n");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
                 sb.append(" ").append(blocks[i][j]);
             }
             sb.append("\r\n");
@@ -182,12 +186,12 @@ public class Board {
     }
 
     private int rowColTo1D(int r, int c) {
-        return r*N + c + 1;
+        return r* n + c + 1;
     }
 
     private int blockManhattanDistance(int curRow, int curCol) {
-        int targetCol = (blocks[curRow][curCol] - 1) % N;
-        int targetRow = (blocks[curRow][curCol] - targetCol - 1) / N;
+        int targetCol = (blocks[curRow][curCol] - 1) % n;
+        int targetRow = (blocks[curRow][curCol] - targetCol - 1) / n;
         return Math.abs(curCol - targetCol) + Math.abs(curRow - targetRow);
     }
 
@@ -203,7 +207,7 @@ public class Board {
 
     private short[][] blocksClone(short[][] oldBlocks) {
         short[][] newBlocks = oldBlocks.clone();
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < n; i++) {
             newBlocks[i] = oldBlocks[i].clone();
         }
         return newBlocks;
